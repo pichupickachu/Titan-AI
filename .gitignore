@@ -236,3 +236,18 @@ obj/
 # OS generated files
 .DS_Store
 Thumbs.db
+# --- Titan AI Specifics ---
+# Ignore your local trading database
+*.db
+*.db-wal
+*.db-shm
+
+# C++ Build Artifacts (CMake)
+/src/analyst/CMakeFiles/
+/src/analyst/CMakeCache.txt
+/src/analyst/cmake_install.cmake
+/src/analyst/Makefile
+/src/analyst/build/
+
+# Compiled Python-C++ Modules
+*.pyd
