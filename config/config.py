@@ -17,11 +17,25 @@ else:
 
 @dataclass
 class Config:
-    # ---  TRADING MODE ---
+    # --- 🔥 TRADING MODE ---
     REAL_TRADING: bool = False  # ✅ ENABLED (Trading real money) / OFF (Simulation)
-    LEVERAGE: int = 1  #  Leverage 1x (Spot). Do not increase in choppy markets!
+    LEVERAGE: int = 1  # ⚠️ Leverage 1x (Spot). Do not increase in choppy markets!
 
-    # ---  ACCESS KEYS ---
+    SYMBOLS: list = field(default_factory=list)
+
+    # --- 🛡 BLACKLIST (Coins to ignore) ---
+    BLACKLIST: list = field(default_factory=lambda: [
+        # USD Stables
+        "USDT", "USDC", "FDUSD", "TUSD", "DAI", "PYUSD", "USDP", "BUSD",
+        # "Internet Dollars" & Algorithmic
+        "USDe", "USDV", "USD0", "FRAX", "LUSD", "USTC",
+        # Euro & Other Fiat-pegged
+        "EURT", "EURR", "AEUR", "EURCV", "EURS", "GBPT", "TRY"
+    ])
+    IGNORED_PATTERNS: list = field(default_factory=lambda: [
+        "3L", "3S", "LONG", "SHORT", "UP", "DOWN"
+    ])
+    # --- 🔑 ACCESS KEYS ---
     TG_TOKEN: str = os.getenv("TG_TOKEN")
     TG_ADMIN_ID: int = int(os.getenv("TG_ADMIN_ID", 0))
     API_KEY: str = os.getenv("MEXC_API_KEY")
@@ -29,34 +43,36 @@ class Config:
     GEMINI_KEY: str = os.getenv("GEMINI_KEY")
     CRYPTOPANIC_KEY = os.getenv("CRYPTOPANIC_KEY", "")
 
+    USE_NEWS_FILTER = True
+    NEWS_CHECK_INTERVAL = 300
+    FUD_PANIC_SCORE = 8
 
-    # ---  INTELLIGENCE SETTINGS (STRICT FILTER) ---
+    # --- 🧠 INTELLIGENCE SETTINGS (STRICT FILTER) ---
     USE_AI: bool = True
     AI_CONFIDENCE_THRESHOLD: int = 7  # 🛡 Require high confidence (7 out of 10)
     MIN_SCORE: int = 60  # 🛡 Min Tech Score (was 50, now 60)
 
-    # ---  CHART SETTINGS ---
+    # --- 📈 CHART SETTINGS ---
     BTC_SYMBOL: str = "BTC/USDT"
     TIMEFRAME: str = "15m"  # 🛡 1h filters noise better than 15m, but 15m gives more entries
 
-
-    # ---  STRATEGY: CATCH-UP ---
-    USE_CATCH_UP: bool = False #  DISABLED (In ranging markets it catches fake breakouts)
+    # --- 🏃 STRATEGY: CATCH-UP ---
+    USE_CATCH_UP: bool = False # ⛔️ DISABLED (In ranging markets it catches fake breakouts)
     LEADER_SYMBOL: str = "BTC/USDT"
     LAG_LOOKBACK: int = 12
     LEADER_PUMP_THRESHOLD: float = 1.5
     FOLLOWER_LAG_THRESHOLD: float = 0.5
 
-    # ---  MONEY MANAGEMENT ---
+    # --- 💰 MONEY MANAGEMENT ---
     FEE_RATE: float = 0.001  # Exchange fee (0.1%)
     MIN_ORDER_SIZE: float = 6.5  # Min order on MEXC (5$ + buffer)
     BASE_ORDER_SIZE: float = 20.0  # Base entry size ($)
-    USE_SMART_SIZE: bool = True  #  Smart calculation (smaller size during high volatility)
+    USE_SMART_SIZE: bool = True  # ✅ Smart calculation (smaller size during high volatility)
 
-    # ---  RISK MANAGEMENT (PROTECTION) ---
+    # --- 🛡 RISK MANAGEMENT (PROTECTION) ---
     MAX_OPEN_POSITIONS: int = 8  # Max 8 simultaneous trades (don't spread out)
     MAX_ADDS: int = 1  # Max 1 averaging (DCA)
-    DCA_THRESHOLD: float = -0.05  #  Average down only if dropped by 5% (not earlier!)
+    DCA_THRESHOLD: float = -0.05  # 🛡 Average down only if dropped by 5% (not earlier!)
     MAX_DAILY_LOSS: float = 20.0  # If we lost 20$ in a day - stop the machine
     RISK_PER_TRADE_PCT: float = 0.02  # Risk 2% of deposit per trade
 
@@ -72,7 +88,7 @@ class Config:
 CFG = Config()
 
 
-# ---  MARKET MOOD FUNCTION ---
+# --- 🌙 MARKET MOOD FUNCTION ---
 def get_market_mood():
     """
     Determines market requirements based on time of day.
@@ -97,7 +113,7 @@ def get_market_mood():
         }
 
 
-# ---  LOGGING SETUP ---
+# --- 📝 LOGGING SETUP ---
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
