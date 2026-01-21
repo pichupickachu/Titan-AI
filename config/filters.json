@@ -1,13 +1,13 @@
 {
-  "scan_mode": "DYNAMIC", 
+  "scan_mode": "DYNAMIC",
   "dynamic_params": {
     "top_n": 200,
     "min_volume_24h": 10000000
   },
-  "priority_list": [
-    "BTC/USDT", "ETH/USDT", "SOL/USDT"
-  ],
   "blacklist": [
-    "USDC/USDT", "FDUSD/USDT", "TUSD/USDT"
-  ]
+    "USDT", "USDC", "FDUSD", "TUSD", "DAI", "PYUSD", "USDP", "BUSD",
+    "USDe", "USDV", "USD0", "FRAX", "LUSD", "USTC",
+    "EURT", "EURR", "AEUR", "EURCV", "EURS", "GBPT", "TRY"
+  ],
+  "ignored_patterns": ["3L", "3S", "LONG", "SHORT", "DOWN", "UP"]
 }
