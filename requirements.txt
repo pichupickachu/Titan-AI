@@ -1,0 +1,22 @@
+# --- AI & Data Analysis ---
+google-genai
+pandas
+numpy
+mplfinance
+Pillow
+
+# --- Trading & Exchange ---
+ccxt
+websockets
+
+# --- Database & Network ---
+aiosqlite
+aiohttp
+python-dotenv
+orjson
+
+# --- Telegram Bot ---
+aiogram
+
+# --- C++ Integration ---
+pybind11
