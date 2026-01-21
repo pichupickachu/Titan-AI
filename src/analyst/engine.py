@@ -24,7 +24,7 @@ from streamer import MexcStreamer
 
 
 # ==============================================================================
-# DNS & SSL BYPASS SESSION
+# 🛡️ DNS & SSL BYPASS SESSION
 # ==============================================================================
 class DNSFriendlySession(AiohttpSession):
     """
@@ -56,7 +56,7 @@ class DNSFriendlySession(AiohttpSession):
 
 
 # ==============================================================================
-# BOT ENGINE
+# ⚙️ BOT ENGINE
 # ==============================================================================
 class BotEngine:
     def __init__(self):
@@ -86,7 +86,7 @@ class BotEngine:
 
         ex_connector = TCPConnector(resolver=resolver, family=socket.AF_INET, ssl=ssl_ctx)
 
-        # Here is the CORRECT NAME - self.session
+        # 🔥 Here is the CORRECT NAME - self.session
         self.session = ClientSession(connector=ex_connector, trust_env=True)
 
         # 3. Configure CCXT parameters
@@ -103,7 +103,7 @@ class BotEngine:
         # Create exchange object
         self.ex = ccxt.mexc(mexc_params)
 
-        # Direct session injection inside the library
+        # 🔥 Direct session injection inside the library
         self.ex.session = self.session
 
         # 4. Connect your modules (now they see the ready session)
@@ -114,11 +114,15 @@ class BotEngine:
         self.db = "titan_ai_new.db"
         self.running = True
         self.lock = asyncio.Lock()
-
+        self.last_list_update = datetime.now() - timedelta(minutes=20)
+        self.cooldowns = {}
+        self.data = MarketDataProvider(self.ex)
+        self.ai = AI_Analyst()
+        self.streamer = MexcStreamer(CFG.SYMBOLS)
         print("✅ Core initialized successfully.")
 
     # --------------------------------------------------------------------------
-    #   DATABASE SYSTEM
+    # 🗄️ DATABASE SYSTEM
     # --------------------------------------------------------------------------
     async def init_db(self):
         """
@@ -213,7 +217,7 @@ class BotEngine:
             raise e  # If DB fails, stop the bot
 
     # --------------------------------------------------------------------------
-    #  NOTIFICATION SYSTEM
+    # 📨 NOTIFICATION SYSTEM
     # --------------------------------------------------------------------------
     async def notify(self, text):
         """
@@ -248,35 +252,56 @@ class BotEngine:
             print(f"⚠️ Notification Error: {e}")
 
     # --------------------------------------------------------------------------
-    #  MARKET SCANNER: FILTERING & DISCOVERY
+    # 🌍 MARKET SCANNER: FILTERING & DISCOVERY
+        # --------------------------------------------------------------------------
+        # 🌍 MARKET SCANNER: FILTERING & DISCOVERY (Updated with Blacklist)
+        # --------------------------------------------------------------------------
     async def update_dynamic_list(self):
-        print("🌍 SCANNING MARKET (Public Mode)...")
+        print("🌍 SCANNING MARKET (TOP-200 + BLACKLIST)...")
         try:
-            # Request only public tickers, no keys needed
+            # 1. Fetch all tickers from the exchange
             tickers = await self.ex.fetch_tickers()
             candidates = []
-            for symbol, data in tickers.items():
-                if "/USDT" not in symbol: continue
-                # Remove junk
-                if any(x in symbol for x in ["3L", "3S", "LONG", "SHORT"]): continue
 
+            for symbol, data in tickers.items():
+                # Filter for USDT pairs only
+                if "/USDT" not in symbol:
+                    continue
+
+                # Extract base asset (e.g., "BTC" from "BTC/USDT")
+                base_asset = symbol.split('/')[0]
+
+                # --- FILTERING PIPELINE ---
+
+                # 1. Validate against the BLACKLIST defined in config.py
+                if base_asset in CFG.BLACKLIST:
+                    continue
+
+                # 2. Exclude leveraged "junk" tokens (e.g., 3L, 3S, LONG, SHORT)
+                if any(x in symbol for x in ["3L", "3S", "LONG", "SHORT"]):
+                    continue
+
+                # 3. Filter by Quote Volume (USDT)
                 vol = data.get('quoteVolume', 0)
-                if vol and vol > 1000000:  # Only liquid assets
+                if vol and vol > 1000000:  # Only assets with > $1,000,000 daily volume
                     candidates.append({'symbol': symbol, 'vol': vol})
 
+            # Sort by volume: most liquid (trending) coins at the top
             candidates.sort(key=lambda x: x['vol'], reverse=True)
-            CFG.SYMBOLS = [c['symbol'] for c in candidates[:100]]
-            print(f"✅ List updated publicly: {len(CFG.SYMBOLS)} coins.")
+
+            # Update the global symbol list (selecting top 200 candidates)
+            CFG.SYMBOLS = [c['symbol'] for c in candidates[:200]]
+
+            print(f"✅ Discovery: {len(CFG.SYMBOLS)} dynamic candidates updated (Blacklist applied).")
             return True
         except Exception as e:
-            print(f"⚠️ Scanner Error: {e}")
+            print(f"⚠️ Scanner Exception: {e}")
             return False
-
     # --------------------------------------------------------------------------
-    #  SMART SIZING: CAPITAL MANAGEMENT
+    # 💰 SMART SIZING: CAPITAL MANAGEMENT
     # --------------------------------------------------------------------------
     # --------------------------------------------------------------------------
-    #  SMART SIZING v2 (With ATR)
+    # 💰 SMART SIZING v2 (With ATR)
     # --------------------------------------------------------------------------
     async def get_smart_position_size(self, confidence=None, atr_pct=None):
         if not CFG.USE_SMART_SIZE:
@@ -310,7 +335,7 @@ class BotEngine:
                 elif int(confidence) < 7:
                     ai_mult = 0.8
 
-            # 4.  VOLATILITY FILTER (ATR)
+            # 4. 🔥 VOLATILITY FILTER (ATR)
             # If coin moves 3% per candle — it's dangerous, cut size
             if atr_pct and atr_pct > 3.0:
                 vol_mult = 0.7
@@ -330,7 +355,7 @@ class BotEngine:
             return base
 
     # --------------------------------------------------------------------------
-    #  REPUTATION SYSTEM: COIN KARMA CHECK
+    # 🛡️ REPUTATION SYSTEM: COIN KARMA CHECK
     # --------------------------------------------------------------------------
     async def check_coin_reputation(self, symbol):
         """
@@ -353,7 +378,7 @@ class BotEngine:
             return True
 
     # --------------------------------------------------------------------------
-    #  EXECUTION: BUY (SMART ENTRY)
+    # 🛒 EXECUTION: BUY (SMART ENTRY)
     # --------------------------------------------------------------------------
     async def execute_buy(self, symbol, current_price, score, debug_data):
         """
@@ -477,7 +502,7 @@ class BotEngine:
         await self.notify(msg)
 
     # --------------------------------------------------------------------------
-    #  EXECUTION: SELL
+    # 📉 EXECUTION: SELL
     # --------------------------------------------------------------------------
     async def execute_sell(self, symbol, current_price, amount_db, pnl_usd, pnl_pct, reason):
         """
@@ -531,7 +556,7 @@ class BotEngine:
                 f"{icon} <b>SELL {symbol}</b>\nReason: {reason}\n💰 PnL: {pnl_usd:+.2f}$ ({pnl_pct * 100:+.2f}%)")
 
     # --------------------------------------------------------------------------
-    #  WATCHDOG v2: SMART TRAILING
+    # 👀 WATCHDOG v2: SMART TRAILING
     # --------------------------------------------------------------------------
     async def watchdog_task(self):
         print("👀 Watchdog: ON (Active Protection v2)")
@@ -570,18 +595,18 @@ class BotEngine:
                     should_sell = False
                     reason = "UNKNOWN"
 
-                    # 1.  HARD STOP (Classic Stop Loss)
+                    # 1. ⛔ HARD STOP (Classic Stop Loss)
                     if cur < avg * CFG.DEFAULT_SL:
                         should_sell = True;
                         reason = "⛔ HARD STOP"
 
-                    # 2.  BREAKEVEN
+                    # 2. 🛡 BREAKEVEN
                     # If price went up 1.5%, move stop to 0 (+0.2%)
                     elif max_roi > 0.015 and cur < avg * 1.002:
                         should_sell = True;
                         reason = "🛡 BREAKEVEN (Saved)"
 
-                    # 3.  SMART TRAILING (Profit taking)
+                    # 3. 💸 SMART TRAILING (Profit taking)
                     # If profit was 3% to 7% -> Stop at 1% below high
                     elif 0.03 < max_roi <= 0.07:
                         stop_price = max_p * 0.99
@@ -596,7 +621,7 @@ class BotEngine:
                             should_sell = True;
                             reason = "🚀 TRAILING (Wide)"
 
-                    # 4. TIME STOP (If stuck)
+                    # 4. 🆘 TIME STOP (If stuck)
                     elif (datetime.now() - datetime.strptime(entry, "%Y-%m-%d %H:%M:%S")).total_seconds() > 14400:
                         if pnl_pct > -0.01:  # Exit only if loss is small
                             should_sell = True;
@@ -611,7 +636,7 @@ class BotEngine:
             await asyncio.sleep(3)
 
     # --------------------------------------------------------------------------
-    #  REPORT SYSTEM
+    # 📅 REPORT SYSTEM
     # --------------------------------------------------------------------------
     async def daily_report_task(self):
         """
@@ -621,7 +646,7 @@ class BotEngine:
             await asyncio.sleep(3600)
 
     # ==========================================================================
-    #  MAIN LOOP: INFINITE WORK CYCLE
+    # 🔄 MAIN LOOP: INFINITE WORK CYCLE
     # ==========================================================================
     async def loop(self):
         """
@@ -630,6 +655,8 @@ class BotEngine:
         await self.init_db()
         try:
             await self.ex.load_markets()
+            await self.update_dynamic_list()
+            self.last_list_update = datetime.now()
         except Exception as e:
             print(f"⚠️ Failed to load markets: {e}")
 
@@ -648,6 +675,14 @@ class BotEngine:
                 if CFG.PAUSED:
                     await asyncio.sleep(5)
                     continue
+                # We update the top-200 list only once every 15 minutes to avoid API rate limits
+                time_since_update = datetime.now() - self.last_list_update
+                if time_since_update.total_seconds() > 900:  # 900 seconds = 15 min
+                    await self.update_dynamic_list()
+                    self.last_list_update = datetime.now()
+
+
+                await self.update_dynamic_list()
 
                 # 1. Check Position Limit
                 async with self.lock:
