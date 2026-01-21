@@ -2,7 +2,7 @@ import sys
 import asyncio
 
 # ==========================================================
-#  WINDOWS ERROR FIX (DNS / SSL)
+# 🚑 WINDOWS ERROR FIX (DNS / SSL)
 # (Must be the very first line of code)
 # ==========================================================
 if sys.platform == 'win32':
@@ -20,7 +20,7 @@ from engine import BotEngine
 from analyzer import Analyzer
 
 # ==========================================================
-# TRASH LOG SILENCER
+# 🔇 TRASH LOG SILENCER
 # Keeps the console clean and beautiful
 # ==========================================================
 logging.getLogger('aiohttp').setLevel(logging.CRITICAL)
@@ -38,7 +38,7 @@ logging.basicConfig(
 
 # ==========================================================
 # ==========================================================
-# ADAPTIVE SESSION MONITOR (CHAMELEON + SMART HANDOVER)
+# 🕒 ADAPTIVE SESSION MONITOR (CHAMELEON + SMART HANDOVER)
 # ==========================================================
 # ==========================================================
 
@@ -63,9 +63,9 @@ async def market_mood_monitor(bot_engine):
             new_sl = 0.98
             new_tp = 1.04  # Standard TP
 
-            # ---  ASIA (00:00 - 07:00 UTC) ---
+            # --- 🌏 ASIA (00:00 - 07:00 UTC) ---
             if 0 <= now_hour < 7:
-                session_name = "ASIA (Scalping)"
+                session_name = "🌏 ASIA (Scalping)"
                 new_min_score = 50
                 new_sl = 0.985  # SL -1.5%
                 new_tp = 1.025  # TP +2.5% (Fast exit)
@@ -84,9 +84,9 @@ async def market_mood_monitor(bot_engine):
                 new_sl = 0.96  # SL -4.0% (Hold the hit)
                 new_tp = 1.07  # TP +7.0% (Catch the rocket!)
 
-            # ---  LATE NIGHT (21:00 - 00:00 UTC) ---
+            # --- 🌑 LATE NIGHT (21:00 - 00:00 UTC) ---
             else:
-                session_name = "LATE NIGHT"
+                session_name = "🌑 LATE NIGHT"
                 new_min_score = 70
                 new_sl = 0.98
                 new_tp = 1.04
@@ -94,7 +94,7 @@ async def market_mood_monitor(bot_engine):
             # Save session name to config so AI can see it
             CFG.CURRENT_SESSION = session_name
 
-            #  SMART HANDOVER LOGIC (Smart cleanup on session switch) 
+            # 🔥 SMART HANDOVER LOGIC (Smart cleanup on session switch) 🔥
             if session_name != last_session and last_session != "INIT":
                 print(f"🔄 SESSION SWITCH: {last_session} -> {session_name}")
 
@@ -175,21 +175,21 @@ async def main():
     @bot_engine.dp.message(Command("start"))
     async def c_start(m: types.Message):
         await m.answer(
-            f" <b>Titan AI v6.0 (Full Power)</b>\n\n"
-            f" <b>CONTROLS:</b>\n"
-            f"/run -  Start trading\n"
-            f"/stop -  Pause (sells only)\n"
-            f"/liquidate -  SELL ALL (Emergency)\n"
+            f"🤖 <b>Titan AI v6.0 (Full Power)</b>\n\n"
+            f"🎮 <b>CONTROLS:</b>\n"
+            f"/run - ▶️ Start trading\n"
+            f"/stop - ⏸ Pause (sells only)\n"
+            f"/liquidate - ☢️ SELL ALL (Emergency)\n"
             f"/sell [BTC] - Sell specific coin\n\n"
-            f" <b>INTELLIGENCE:</b>\n"
+            f"🧠 <b>INTELLIGENCE:</b>\n"
             f"/ai [BTC] - 👁 Gemini (Text + Walls + Vision)\n"
-            f"/scan -  Market Scan (C++ Math)\n\n"
-            f" <b>INFO:</b>\n"
-            f"/balance -  Portfolio\n"
-            f"/stats -  Statistics\n"
-            f"/history -  History\n"
-            f"/config -  Config\n"
-            f"/sync -  Sync DB"
+            f"/scan - 🔍 Market Scan (C++ Math)\n\n"
+            f"📊 <b>INFO:</b>\n"
+            f"/balance - 💼 Portfolio\n"
+            f"/stats - 📈 Statistics\n"
+            f"/history - 📜 History\n"
+            f"/config - ⚙️ Config\n"
+            f"/sync - 🔄 Sync DB"
         )
 
     @bot_engine.dp.message(Command("run"))
@@ -394,7 +394,8 @@ async def main():
 
             # 2. Scan coins
             count = 0
-            for s in CFG.SYMBOLS[:250]:
+            candidates = await bot_engine.data.get_top_candidates(limit=200)
+            for s in candidates:
                 df = await bot_engine.data.get_candles(s, CFG.TIMEFRAME)
                 if df.empty: continue
 
@@ -414,7 +415,7 @@ async def main():
         except Exception as e:
             await ms.edit_text(f"Scan error: {e}")
 
-    # ---  FULL COMMAND /AI WITH "EYES", "WALLS" AND "LIQUIDATIONS"  ---
+    # --- 🔥 FULL COMMAND /AI WITH "EYES", "WALLS" AND "LIQUIDATIONS" 🔥 ---
     @bot_engine.dp.message(Command("ai"))
     async def c_manual_ai(m: types.Message):
         """
@@ -535,14 +536,14 @@ async def main():
             await status.edit_text(f"❌ Error analyzing {user_input}: {str(e)}")
 
     # ==========================================================
-    # 🔥 APP STARTUP
+    # APP STARTUP
     # ==========================================================
     try:
         await bot_engine.bot.delete_webhook(drop_pending_updates=True)
-        print("⚙️ Checking Database...")
+        print("Checking Database...")
         await bot_engine.init_db()
 
-        print("🚀 Titan AI Starting...")
+        print("Titan AI Starting...")
 
         # Run concurrently: Trade Loop + Telegram + Mood Monitor
         await asyncio.gather(
@@ -552,8 +553,8 @@ async def main():
         )
 
     except Exception as e:
-        error_msg = f"💀 <b>CRITICAL ERROR!</b>\n<code>{str(e)}</code>"
-        print(f"❌ MAIN LOOP CRASH: {e}")
+        error_msg = f"<b>CRITICAL ERROR!</b>\n<code>{str(e)}</code>"
+        print(f"MAIN LOOP CRASH: {e}")
         try:
             await bot_engine.bot.send_message(CFG.TG_ADMIN_ID, error_msg)
         except:
@@ -565,7 +566,7 @@ async def main():
 
 
 # ==========================================================
-#  UNIVERSAL LAUNCHER (WINDOWS + LINUX)
+# 🚑 UNIVERSAL LAUNCHER (WINDOWS + LINUX)
 # Insert this at the very bottom of main.py
 # ==========================================================
 if __name__ == "__main__":
@@ -579,9 +580,9 @@ if __name__ == "__main__":
             import uvloop
 
             uvloop.install()
-            print("🚀 TURBO MODE: Active (uvloop installed)")
+            print("TURBO MODE: Active (uvloop installed)")
         except ImportError:
-            print("⚠️ uvloop not found. Running on standard engine.")
+            print("uvloop not found. Running on standard engine.")
 
     # Infinite Reanimation Loop
     while True:
@@ -590,19 +591,19 @@ if __name__ == "__main__":
             if sys.platform == 'win32':
                 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-            # 🚀 BOT START
-            print("🚀 Bot starting...")
+            # BOT START
+            print("Bot starting...")
             # Ensure main() is defined above
             asyncio.run(main())
 
-            print("👋 Bot finished normally.")
+            print("Bot finished normally.")
             break
 
         except KeyboardInterrupt:
-            print("🛑 Stopped by user (Ctrl+C).")
+            print("Stopped by user (Ctrl+C).")
             break
 
         except Exception as e:
-            print(f"⚠️ CRASH: {e}")
-            print("🚑 Restarting in 5 seconds...")
+            print(f"CRASH: {e}")
+            print("Restarting in 5 seconds...")
             time.sleep(5)
