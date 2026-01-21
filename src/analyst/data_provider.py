@@ -1,6 +1,7 @@
 import pandas as pd
 import aiohttp
 import logging
+from config import CFG
 
 
 class MarketDataProvider:
@@ -15,6 +16,42 @@ class MarketDataProvider:
                 self.markets_loaded = True
             except Exception as e:
                 logging.error(f"Error loading markets: {e}")
+
+
+    async def get_top_candidates(self, limit=200):
+        """
+        scans market.
+        """
+        try:
+            await self.ensure_markets()
+
+            # 1. tickers all coins
+            tickers = await self.ex.fetch_tickers()
+
+            #filter usdt only
+            all_pairs = []
+            for symbol, data in tickers.items():
+                if symbol.endswith('/USDT'):
+                    all_pairs.append(data)
+
+            # 3. top coins 24 h
+            all_pairs.sort(key=lambda x: x.get('quoteVolume', 0), reverse=True)
+
+            # 4. filter BLACKLIST
+            active_candidates = []
+            for item in all_pairs[:limit]:
+                symbol = item['symbol']
+                base_asset = symbol.split('/')[0]
+
+                if base_asset not in CFG.BLACKLIST:
+                    active_candidates.append(symbol)
+
+            logging.info(f"🔍 Scanner: Found {len(active_candidates)} liquid candidates after filtering.")
+            return active_candidates
+
+        except Exception as e:
+            logging.error(f"❌ Scanner Error: {e}")
+            return []
 
     async def get_candles(self, symbol, timeframe='15m', limit=100):
         try:
