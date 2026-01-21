@@ -8,7 +8,7 @@ from google import genai
 from google.genai import types
 from config import CFG
 from PIL import Image
-import orjson  # Fast JSON Serialization
+import orjson  # 🔥 Fast JSON Serialization
 
 load_dotenv()
 
@@ -22,7 +22,7 @@ class AI_Analyst:
             return
         try:
             self.client = genai.Client(api_key=self.api_key)
-            # FLAGSHIP 2.0 MODEL
+            # 🔥 FLAGSHIP 2.0 MODEL
             self.model_name = "gemini-2.0-flash"
             print(f"✅ Gemini 2.0 Flash Connected (Orjson Powered)")
         except Exception as e:
@@ -98,7 +98,7 @@ class AI_Analyst:
             }}
             """
 
-            # NATIVE JSON OUTPUT + SAFETY FILTERS OFF
+            # 🔥 NATIVE JSON OUTPUT + SAFETY FILTERS OFF
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
                 model=self.model_name,
@@ -119,7 +119,7 @@ class AI_Analyst:
             return None
 
     # =========================================================================
-    # LOGIC MODULE (BRAIN)
+    # 🧠 LOGIC MODULE (BRAIN)
     # =========================================================================
 
     async def get_market_sentiment(self, btc_df):
@@ -186,7 +186,7 @@ class AI_Analyst:
         else:
             session_instructions = "🕒 SESSION: Low Liquidity. Proceed with caution."
 
-        # FAST DATA PREPARATION (ORJSON)
+        # 🔥 FAST DATA PREPARATION (ORJSON)
         # .decode('utf-8') is mandatory for the API
         candidates_json = orjson.dumps(
             candidates_data,
@@ -202,7 +202,7 @@ class AI_Analyst:
         INPUT DATA:
         {candidates_json}
 
-         CRITICAL INSTRUCTION: Analyze 'liquidity_walls' & 'Heatmap':
+        🔥 CRITICAL INSTRUCTION: Analyze 'liquidity_walls' & 'Heatmap':
 
         1. "REAL ORDERBOOK WALLS" (Hard Barriers):
            - RESISTANCE WALL above? -> Price likely REJECTS.
@@ -264,7 +264,7 @@ class AI_Analyst:
         except:
             return {"decision": "SELL", "reason": "Error"}
 
-    #  FAST PARSING (ORJSON)
+    # 🔥 FAST PARSING (ORJSON)
     def _parse_json(self, text):
         """Cleans and parses the AI's JSON response."""
         try:
