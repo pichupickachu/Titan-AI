@@ -205,3 +205,34 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+
+# Secrets and Configs
+.env
+.flaskenv
+
+# C++ Build and Binaries
+build/
+bin/
+obj/
+*.exe
+*.o
+*.a
+*.so
+*.out
+
+# Logging
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
