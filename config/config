@@ -29,9 +29,6 @@ class Config:
     GEMINI_KEY: str = os.getenv("GEMINI_KEY")
     CRYPTOPANIC_KEY = os.getenv("CRYPTOPANIC_KEY", "")
 
-    USE_NEWS_FILTER = True
-    NEWS_CHECK_INTERVAL = 300
-    FUD_PANIC_SCORE = 8
 
     # ---  INTELLIGENCE SETTINGS (STRICT FILTER) ---
     USE_AI: bool = True
@@ -42,11 +39,6 @@ class Config:
     BTC_SYMBOL: str = "BTC/USDT"
     TIMEFRAME: str = "15m"  # 🛡 1h filters noise better than 15m, but 15m gives more entries
 
-    # Coins for trading (Liquid tops, trash removed)
-    SYMBOLS: list = field(default_factory=lambda: [
-        "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT",
-        "DOGE/USDT", "XRP/USDT", "LINK/USDT", "ADA/USDT"
-    ])
 
     # ---  STRATEGY: CATCH-UP ---
     USE_CATCH_UP: bool = False #  DISABLED (In ranging markets it catches fake breakouts)
