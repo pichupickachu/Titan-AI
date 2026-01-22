@@ -682,8 +682,6 @@ class BotEngine:
                     self.last_list_update = datetime.now()
 
 
-                await self.update_dynamic_list()
-
                 # 1. Check Position Limit
                 async with self.lock:
                     async with aiosqlite.connect(self.db) as db:
