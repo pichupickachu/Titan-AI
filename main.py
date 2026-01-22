@@ -66,14 +66,14 @@ async def market_mood_monitor(bot_engine):
             # --- 🌏 ASIA (00:00 - 07:00 UTC) ---
             if 0 <= now_hour < 7:
                 session_name = "🌏 ASIA (Scalping)"
-                new_min_score = 50
+                new_min_score = 80
                 new_sl = 0.985  # SL -1.5%
                 new_tp = 1.025  # TP +2.5% (Fast exit)
 
             # --- 🇪🇺 LONDON (07:00 - 13:00 UTC) ---
             elif 7 <= now_hour < 13:
                 session_name = "🇪🇺 LONDON (Trend)"
-                new_min_score = 60
+                new_min_score = 65
                 new_sl = 0.98  # SL -2.0%
                 new_tp = 1.04  # TP +4.0% (Standard)
 
@@ -536,14 +536,14 @@ async def main():
             await status.edit_text(f"❌ Error analyzing {user_input}: {str(e)}")
 
     # ==========================================================
-    # APP STARTUP
+    # 🔥 APP STARTUP
     # ==========================================================
     try:
         await bot_engine.bot.delete_webhook(drop_pending_updates=True)
-        print("Checking Database...")
+        print("⚙️ Checking Database...")
         await bot_engine.init_db()
 
-        print("Titan AI Starting...")
+        print("🚀 Titan AI Starting...")
 
         # Run concurrently: Trade Loop + Telegram + Mood Monitor
         await asyncio.gather(
@@ -553,8 +553,8 @@ async def main():
         )
 
     except Exception as e:
-        error_msg = f"<b>CRITICAL ERROR!</b>\n<code>{str(e)}</code>"
-        print(f"MAIN LOOP CRASH: {e}")
+        error_msg = f"💀 <b>CRITICAL ERROR!</b>\n<code>{str(e)}</code>"
+        print(f"❌ MAIN LOOP CRASH: {e}")
         try:
             await bot_engine.bot.send_message(CFG.TG_ADMIN_ID, error_msg)
         except:
@@ -580,9 +580,9 @@ if __name__ == "__main__":
             import uvloop
 
             uvloop.install()
-            print("TURBO MODE: Active (uvloop installed)")
+            print("🚀 TURBO MODE: Active (uvloop installed)")
         except ImportError:
-            print("uvloop not found. Running on standard engine.")
+            print("⚠️ uvloop not found. Running on standard engine.")
 
     # Infinite Reanimation Loop
     while True:
@@ -591,19 +591,19 @@ if __name__ == "__main__":
             if sys.platform == 'win32':
                 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-            # BOT START
-            print("Bot starting...")
+            # 🚀 BOT START
+            print("🚀 Bot starting...")
             # Ensure main() is defined above
             asyncio.run(main())
 
-            print("Bot finished normally.")
+            print("👋 Bot finished normally.")
             break
 
         except KeyboardInterrupt:
-            print("Stopped by user (Ctrl+C).")
+            print("🛑 Stopped by user (Ctrl+C).")
             break
 
         except Exception as e:
-            print(f"CRASH: {e}")
-            print("Restarting in 5 seconds...")
+            print(f"⚠️ CRASH: {e}")
+            print("🚑 Restarting in 5 seconds...")
             time.sleep(5)
